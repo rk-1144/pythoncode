@@ -1,0 +1,53 @@
+So, We have to design a Ml model which can detect the fraud Transaction( Here the transaction are home lone related Transaction) so we have data .csv of 20 columns 
+That columns are:-
+Transaction Type
+Account number
+Account type
+class code
+collatrael code
+Short name
+post_date
+effective date
+transaction code
+actio code
+Field number
+field chgdesc
+interest
+principle
+misc
+description
+operator_id
+operator_name
+batch_number
+total
+so in the data for each transaction we dont have some values for some transactions like field name, Field change
+so we have derive features from this data. features like 
+Transaction Amount:
+Transaction Date and Time:
+Transaction Frequency:
+Account Age:
+Historical Transaction Data:
+Transaction Velocity:
+Behavioral Biometrics
+Account Balance
+Geo-Velocity
+write a python code to extract that features and store it in .csv file
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
