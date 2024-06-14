@@ -87,6 +87,115 @@ accuracy = accuracy_score(y_test, y_pred)
 print(f"Accuracy: {accuracy:.2f}")
 
 
+import pandas as pd
+import numpy as np
+import random
+import string
+from datetime import datetime, timedelta
+
+# Helper functions
+def random_date(start, end):
+    """Generate a random date between start and end."""
+    return start + timedelta(days=random.randint(0, (end - start).days))
+
+def generate_account_number():
+    """Generate a 17-digit account number."""
+    return ''.join([str(random.randint(0, 9)) for _ in range(17)])
+
+def generate_name():
+    """Generate a random name."""
+    first_names = ['John', 'Jane', 'Alice', 'Bob', 'Tom', 'Anna']
+    last_names = ['Doe', 'Smith', 'Johnson', 'Brown', 'Davis', 'Wilson']
+    return f"{random.choice(first_names)} {random.choice(last_names)}"
+
+def generate_operator_id():
+    """Generate an 8-character operator ID."""
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+
+def generate_description():
+    """Generate a random description."""
+    descriptions = ['Payment', 'Refund', 'Adjustment', 'Transfer', 'Loan', 'Interest']
+    return random.choice(descriptions)
+
+def generate_transaction_code():
+    """Generate a transaction code between 60 and 90."""
+    return random.randint(60, 90)
+
+def generate_action_code():
+    """Generate a capital letter as action code."""
+    return random.choice(string.ascii_uppercase)
+
+def to_txt_format(row):
+    """Convert row to 136-character string format."""
+    return f"{row['TransactionType']}{row['AccountNumber']}{row['AccountType']}{row['ClassCode']}{row['CollateralCode']}{row['ShortName']}{row['PostDate']}{row['EffectiveDate']}{row['TransactionCode']}{row['ActionCode']}{row['Interest']}{row['InterestSign']}{row['Principal']}{row['PrincipalSign']}{row['Misc']}{row['MiscSign']}{row['Description']}{row['OperatorID']}{row['OperatorName']}{row['BatchNumber']}{row['Total']}{row['TotalSign']}"
+
+# Parameters
+n_non_fraud = 1000
+n_fraud = 50
+n_total = n_non_fraud + n_fraud
+
+# Date range for generating random dates
+start_date = datetime(2023, 1, 1)
+end_date = datetime(2023, 12, 31)
+
+# Generate transactions
+transactions = []
+for i in range(n_total):
+    TransactionType = '3'
+    AccountNumber = generate_account_number()
+    AccountType = str(random.randint(0, 9))
+    ClassCode = f"{random.randint(0, 99):02d}"
+    CollateralCode = f"{random.randint(0, 9999):04d}"
+    ShortName = f"{generate_name():<15}"[:15]
+    PostDate = random_date(start_date, end_date).strftime('%m%d%y2')
+    EffectiveDate = random_date(datetime.strptime(PostDate[:-1], '%m%d%y'), end_date).strftime('%m%d%y2')
+    TransactionCode = generate_transaction_code()
+    ActionCode = generate_action_code()
+    Interest = random.randint(100, 10000)
+    InterestSign = random.choice(['+', '-'])
+    Principal = random.randint(1000, 50000)
+    PrincipalSign = random.choice(['+', '-'])
+    Misc = random.randint(100, 10000)
+    MiscSign = random.choice(['+', '-'])
+    Total = Interest + Principal + Misc
+    TotalSign = random.choice(['+', '-'])
+    Description = f"{generate_description():<6}"[:6]
+    OperatorID = generate_operator_id()
+    OperatorName = f"{generate_name():<16}"[:16]
+    BatchNumber = f"{random.randint(0, 999):03d}"
+    
+    # Apply business rules
+    IsFraud = 0
+    if Total != (Principal + Interest + Misc):
+        IsFraud = 1
+    if Interest > (0.125 * Principal):
+        IsFraud = 1
+    if TransactionCode > 90 or TransactionCode < 60 or ord(ActionCode) > 90 or ord(ActionCode) < 60:
+        IsFraud = 1
+    
+    transactions.append([
+        TransactionType, AccountNumber, AccountType, ClassCode, CollateralCode, ShortName, 
+        PostDate, EffectiveDate, TransactionCode, ActionCode, Interest, InterestSign, 
+        Principal, PrincipalSign, Misc, MiscSign, Description, OperatorID, OperatorName, 
+        BatchNumber, Total, TotalSign, IsFraud
+    ])
+
+# Convert to DataFrame
+columns = ['TransactionType', 'AccountNumber', 'AccountType', 'ClassCode', 'CollateralCode', 'ShortName', 
+           'PostDate', 'EffectiveDate', 'TransactionCode', 'ActionCode', 'Interest', 'InterestSign', 
+           'Principal', 'PrincipalSign', 'Misc', 'MiscSign', 'Description', 'OperatorID', 'OperatorName', 
+           'BatchNumber', 'Total', 'TotalSign', 'IsFraud']
+transactions_df = pd.DataFrame(transactions, columns=columns)
+
+# Convert to TXT format
+transactions_df['TXT_Format'] = transactions_df.apply(to_txt_format, axis=1)
+
+# Save to CSV
+transactions_df.drop(columns=['TXT_Format']).to_csv('/mnt/data/transactions.csv', index=False)
+
+transactions_df.head(10)
+
+
 
 
 
